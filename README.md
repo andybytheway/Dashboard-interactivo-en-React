@@ -9,3 +9,5 @@ Nombre del Equipo: **"Alfa Buena Maravilla Onda Dinamita Escuadrón Lobo"**
 El objetivo central del dashboard es dar respuesta analítica y visual a la pregunta: ¿Quién contamina más y cómo se relaciona esto con el crecimiento económico?
 
 El dashboard estratégico permite desmitificar la visión sesgada que evalúa a las naciones únicamente por sus emisiones brutas totales, incorporando métricas normalizadas per cápita y coeficientes de desacoplamiento entre el Producto Interno Bruto (PIB) y la contaminación atmosférica.
+
+Demo: https://dashboard-interactivo-en-react.vercel.app
