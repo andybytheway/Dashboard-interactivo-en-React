@@ -635,7 +635,7 @@ export default function App() {
             className="lg:col-span-8 bg-white rounded-xl p-5 border flex flex-col justify-between"
             style={{ borderColor: COLORS.border }}
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 min-h-[38px]">
               <div>
                 <h3 className="text-base font-bold" style={{ color: COLORS.slateBlue }}>
                   Distribución Geográfica de Emisiones Per Cápita ({selectedYear})
@@ -644,12 +644,19 @@ export default function App() {
                   Haz clic en cualquier nación del mapa para aislar su trayectoria histórica y métricas.
                 </p>
               </div>
-              {hoveredCountry && (
-                <div className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg shadow-xs">
-                  <strong>{hoveredCountry.country}</strong>: {hoveredCountry.co2_per_capita.toFixed(2)} t/hab ·{' '}
-                  {hoveredCountry.co2.toFixed(1)} Mt totales
-                </div>
-              )}
+              {/* Espacio reservado fijo para evitar saltos de altura al pasar el cursor */}
+              <div className="h-[30px] flex items-center shrink-0 pointer-events-none">
+                {hoveredCountry ? (
+                  <div className="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg shadow-xs whitespace-nowrap">
+                    <strong>{hoveredCountry.country}</strong>: {hoveredCountry.co2_per_capita.toFixed(2)} t/hab ·{' '}
+                    {hoveredCountry.co2.toFixed(1)} Mt totales
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-slate-400 px-2 py-1">
+                    Pasa el cursor sobre un país o punto
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Lienzo Cartográfico con Fronteras Reales del Mundo */}
@@ -661,14 +668,15 @@ export default function App() {
                   {worldPaths.map((geo) => {
                     const record = geo.iso3 ? countryByIsoMap[geo.iso3] : null;
                     const isSelected = geo.iso3 && selectedCountryIso === geo.iso3;
+                    const isHovered = record && hoveredCountry?.iso_code === geo.iso3;
                     return (
                       <path
                         key={geo.key}
                         d={geo.d}
                         fill={record ? getEmissionColor(record.co2_per_capita) : '#E2E8F0'}
-                        stroke={isSelected ? COLORS.slateBlue : '#FFFFFF'}
-                        strokeWidth={isSelected ? 1.6 : 0.45}
-                        className="transition-opacity duration-150 hover:opacity-80"
+                        fillOpacity={isHovered ? 0.8 : 1}
+                        stroke={isSelected || isHovered ? COLORS.slateBlue : '#FFFFFF'}
+                        strokeWidth={isSelected ? 1.6 : isHovered ? 1.1 : 0.45}
                         style={{ cursor: record ? 'pointer' : 'default' }}
                         onMouseEnter={() => {
                           if (record) setHoveredCountry(record);
@@ -757,7 +765,7 @@ export default function App() {
             </div>
 
             <p className="text-[11px] text-slate-400 mt-4 pt-2 border-t border-slate-100">
-              * Codificación uniforme en Coral (#E76F51) para alertar alta intensidad individual.
+              Codificación uniforme en Coral (#E76F51) para alertar alta intensidad individual.
             </p>
           </div>
         </section>
@@ -955,15 +963,16 @@ export default function App() {
                       const cx = getX(pt.gdpPerCapita);
                       const cy = getY(pt.co2_per_capita);
                       const isSelected = selectedCountryIso === pt.iso_code;
+                      const isHovered = hoveredCountry?.iso_code === pt.iso_code;
                       return (
                         <circle
                           key={pt.iso_code}
                           cx={cx}
                           cy={cy}
-                          r={isSelected ? 6.5 : 4}
+                          r={isSelected ? 6.5 : 4.2}
                           fill={getEmissionColor(pt.co2_per_capita)}
-                          stroke={isSelected ? COLORS.slateBlue : '#FFFFFF'}
-                          strokeWidth={isSelected ? 2 : 0.8}
+                          stroke={isSelected || isHovered ? COLORS.slateBlue : '#FFFFFF'}
+                          strokeWidth={isSelected || isHovered ? 1.8 : 0.8}
                           className="cursor-pointer"
                           onMouseEnter={() => setHoveredCountry(pt)}
                           onMouseLeave={() => setHoveredCountry(null)}
@@ -1019,7 +1028,7 @@ export default function App() {
                   Se implementó la cuadrícula de <strong>3 columnas × 4 filas</strong> respetando el patrón de lectura
                   en F/Z: encabezado y filtros arriba, <strong>CO₂ per cápita</strong> destacado arriba a la izquierda
                   (Nivel 1), mapa coroplético mundial con fronteras reales (8 cols) + ranking ordenado (4 cols) en el
-                  centro (Nivel 2), y serie histórica + dispersión logarítmica en la base[cite: 13].
+                  centro (Nivel 2), y serie histórica + dispersión logarítmica en la base.
                 </p>
               </div>
 
@@ -1032,7 +1041,7 @@ export default function App() {
                   El componente consume directamente <code>co2_data.json</code> preprocesado desde{' '}
                   <em>Our World in Data</em>, filtrando estrictamente códigos <strong>ISO-3</strong> (excluyendo
                   agregados como <code>OWID_WRL</code> o continentes), conservando los valores atípicos (outliers)
-                  y renderizándolos mediante escala <strong>Log₁₀</strong> y filtro de población mínima[cite: 14, 15].
+                  y renderizándolos mediante escala <strong>Log₁₀</strong> y filtro de población mínima.
                 </p>
               </div>
 
@@ -1044,7 +1053,7 @@ export default function App() {
                 <p>
                   Paleta funcional de 4 colores (<code>#1E3A5F</code> Azul Pizarra, <code>#2A9D8F</code> Verde
                   Esmeralda, <code>#E9C46A</code> Ámbar y <code>#E76F51</code> Coral) diseñada para accesibilidad
-                  (daltonismo) y máxima relación tinta-datos[cite: 13].
+                  (daltonismo) y máxima relación tinta-datos.
                 </p>
               </div>
             </div>
